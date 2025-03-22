@@ -27,6 +27,20 @@ def test_start_match_with_same_team():
     with pytest.raises(ValueError):
         scoreboard.start_match("Mexico", "Mexico")
 
+def test_start_match_with_existing_teams():
+    scoreboard = ScoreBoard()
+    
+    # Start first match between Mexico and Canada
+    scoreboard.start_match("Mexico", "Canada")
+    
+    # Try to start another match between the same teams
+    with pytest.raises(ValueError):
+        scoreboard.start_match("Mexico", "Canada")
+    
+    # Try with reversed order
+    with pytest.raises(ValueError):
+        scoreboard.start_match("Canada", "Mexico")
+
 def test_finish_match():
     scoreboard = ScoreBoard()
     match_id = scoreboard.start_match("Mexico", "Canada")
@@ -64,6 +78,26 @@ def test_update_score_negative():
     
     with pytest.raises(ValueError):
         scoreboard.update_score(match_id, 0, -1)
+
+def test_update_score_cannot_decrease():
+    scoreboard = ScoreBoard()
+    match_id = scoreboard.start_match("Mexico", "Canada")
+    
+    # Set initial score
+    scoreboard.update_score(match_id, 2, 1)
+    
+    # Try to decrease home team score
+    with pytest.raises(ValueError, match="Scores cannot be decreased"):
+        scoreboard.update_score(match_id, 1, 1)
+    
+    # Try to decrease away team score
+    with pytest.raises(ValueError, match="Scores cannot be decreased"):
+        scoreboard.update_score(match_id, 2, 0)
+    
+    # Verify scores remain unchanged
+    match = scoreboard.matches[match_id]
+    assert match.home_score == 2
+    assert match.away_score == 1
 
 def test_get_summary():
     scoreboard = ScoreBoard()
@@ -157,4 +191,10 @@ def test_get_summary_world_cup_example():
     assert str(summary[1]) == "Spain 10 - Brazil 2"       # Total: 12 (added earlier)
     assert str(summary[2]) == "Mexico 0 - Canada 5"       # Total: 5
     assert str(summary[3]) == "Argentina 3 - Australia 1" # Total: 4 (added later)
-    assert str(summary[4]) == "Germany 2 - France 2"      # Total: 4 (added earlier) 
+    assert str(summary[4]) == "Germany 2 - France 2"      # Total: 4 (added earlier)
+
+def test_get_summary_with_no_matches():
+    scoreboard = ScoreBoard()
+    summary = scoreboard.get_summary()
+    assert isinstance(summary, list)
+    assert len(summary) == 0 

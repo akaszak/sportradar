@@ -22,12 +22,23 @@ class ScoreBoard:
         self.matches: Dict[str, Match] = {}
         self._next_order = 0  # Counter for creation order
     
+    def _has_active_match(self, team1: str, team2: str) -> bool:
+        """Check if there's an active match between the given teams."""
+        for match in self.matches.values():
+            if (match.home_team == team1 and match.away_team == team2) or \
+               (match.home_team == team2 and match.away_team == team1):
+                return True
+        return False
+    
     def start_match(self, home_team: str, away_team: str) -> str:
         if not home_team or not away_team:
             raise ValueError("Team names cannot be empty")
         
         if home_team == away_team:
             raise ValueError("Home and away teams cannot be the same")
+        
+        if self._has_active_match(home_team, away_team):
+            raise ValueError(f"Match between {home_team} and {away_team} already exists")
         
         match_id = str(uuid.uuid4())
         self.matches[match_id] = Match(
@@ -52,6 +63,11 @@ class ScoreBoard:
             raise ValueError("Scores cannot be negative")
         
         match = self.matches[match_id]
+        
+        # Check if either score is being decreased
+        if home_score < match.home_score or away_score < match.away_score:
+            raise ValueError("Scores cannot be decreased")
+        
         match.home_score = home_score
         match.away_score = away_score
     
