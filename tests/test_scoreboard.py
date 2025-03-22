@@ -81,11 +81,29 @@ def test_get_summary():
     # Get summary
     summary = scoreboard.get_summary()
     
-    # Verify order: highest total score first, then by most recent
+    # Verify order: highest total score first
     assert len(summary) == 3
     assert summary[0].home_team == "Spain"  # Highest score (12)
     assert summary[1].home_team == "Mexico"  # Second highest (5)
     assert summary[2].home_team == "Germany"  # Lowest score (4)
+
+def test_get_summary_with_same_total_score():
+    scoreboard = ScoreBoard()
+    
+    # Start matches with same total scores
+    match1_id = scoreboard.start_match("Mexico", "Canada")
+    match2_id = scoreboard.start_match("Spain", "Brazil")
+    
+    # Update scores to have same total
+    scoreboard.update_score(match1_id, 3, 2)  # Total: 5
+    scoreboard.update_score(match2_id, 4, 1)  # Total: 5
+    
+    # Get summary
+    summary = scoreboard.get_summary()
+    
+    # Verify both matches are included
+    assert len(summary) == 2
+    assert all(match.home_score + match.away_score == 5 for match in summary)
 
 def test_get_summary_with_finished_matches():
     scoreboard = ScoreBoard()

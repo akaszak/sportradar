@@ -1,7 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 @dataclass
 class Match:
@@ -9,8 +8,6 @@ class Match:
     away_team: str
     home_score: int = 0
     away_score: int = 0
-    start_time: datetime = None
-    is_finished: bool = False
 
 class ScoreBoard:
     def __init__(self):
@@ -26,8 +23,7 @@ class ScoreBoard:
         match_id = str(uuid.uuid4())
         self.matches[match_id] = Match(
             home_team=home_team,
-            away_team=away_team,
-            start_time=datetime.now()
+            away_team=away_team
         )
         
         return match_id
@@ -52,9 +48,9 @@ class ScoreBoard:
         # Get all active matches
         active_matches = [match for match in self.matches.values()]
         
-        # Sort by total score (descending) and then by start time (most recent first)
+        # Sort by total score (descending)
         return sorted(
             active_matches,
-            key=lambda x: (x.home_score + x.away_score, x.start_time),
+            key=lambda x: x.home_score + x.away_score,
             reverse=True
         ) 
