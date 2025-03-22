@@ -91,19 +91,25 @@ def test_get_summary_with_same_total_score():
     scoreboard = ScoreBoard()
     
     # Start matches with same total scores
-    match1_id = scoreboard.start_match("Mexico", "Canada")
-    match2_id = scoreboard.start_match("Spain", "Brazil")
+    match1_id = scoreboard.start_match("Mexico", "Canada")  # First added
+    match2_id = scoreboard.start_match("Spain", "Brazil")   # Second added
+    match3_id = scoreboard.start_match("Germany", "France") # Third added
     
     # Update scores to have same total
     scoreboard.update_score(match1_id, 3, 2)  # Total: 5
     scoreboard.update_score(match2_id, 4, 1)  # Total: 5
+    scoreboard.update_score(match3_id, 2, 3)  # Total: 5
     
     # Get summary
     summary = scoreboard.get_summary()
     
-    # Verify both matches are included
-    assert len(summary) == 2
+    # Verify both matches are included and ordered by most recently added
+    assert len(summary) == 3
     assert all(match.home_score + match.away_score == 5 for match in summary)
+    # Most recently added should be first (Germany)
+    assert summary[0].home_team == "Germany"
+    assert summary[1].home_team == "Spain"
+    assert summary[2].home_team == "Mexico"
 
 def test_get_summary_with_finished_matches():
     scoreboard = ScoreBoard()
@@ -123,4 +129,32 @@ def test_get_summary_with_finished_matches():
     
     # Verify only active matches are included
     assert len(summary) == 1
-    assert summary[0].home_team == "Spain" 
+    assert summary[0].home_team == "Spain"
+
+def test_get_summary_world_cup_example():
+    scoreboard = ScoreBoard()
+    
+    # Add matches in the specified order
+    mex_can = scoreboard.start_match("Mexico", "Canada")
+    spa_bra = scoreboard.start_match("Spain", "Brazil")
+    ger_fra = scoreboard.start_match("Germany", "France")
+    uru_ita = scoreboard.start_match("Uruguay", "Italy")
+    arg_aus = scoreboard.start_match("Argentina", "Australia")
+    
+    # Update scores
+    scoreboard.update_score(mex_can, 0, 5)      # Total: 5
+    scoreboard.update_score(spa_bra, 10, 2)     # Total: 12
+    scoreboard.update_score(ger_fra, 2, 2)      # Total: 4
+    scoreboard.update_score(uru_ita, 6, 6)      # Total: 12
+    scoreboard.update_score(arg_aus, 3, 1)      # Total: 4
+    
+    # Get summary
+    summary = scoreboard.get_summary()
+    
+    # Verify the expected order and score representation
+    assert len(summary) == 5
+    assert str(summary[0]) == "Uruguay 6 - Italy 6"       # Total: 12 (added later)
+    assert str(summary[1]) == "Spain 10 - Brazil 2"       # Total: 12 (added earlier)
+    assert str(summary[2]) == "Mexico 0 - Canada 5"       # Total: 5
+    assert str(summary[3]) == "Argentina 3 - Australia 1" # Total: 4 (added later)
+    assert str(summary[4]) == "Germany 2 - France 2"      # Total: 4 (added earlier) 

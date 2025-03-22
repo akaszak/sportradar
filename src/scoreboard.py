@@ -8,10 +8,19 @@ class Match:
     away_team: str
     home_score: int = 0
     away_score: int = 0
+    creation_order: int = 0  # Track when the match was added
+
+    def __str__(self) -> str:
+        return f"{self.home_team} {self.home_score} - {self.away_team} {self.away_score}"
+
+    @property
+    def total_score(self) -> int:
+        return self.home_score + self.away_score
 
 class ScoreBoard:
     def __init__(self):
         self.matches: Dict[str, Match] = {}
+        self._next_order = 0  # Counter for creation order
     
     def start_match(self, home_team: str, away_team: str) -> str:
         if not home_team or not away_team:
@@ -23,8 +32,10 @@ class ScoreBoard:
         match_id = str(uuid.uuid4())
         self.matches[match_id] = Match(
             home_team=home_team,
-            away_team=away_team
+            away_team=away_team,
+            creation_order=self._next_order
         )
+        self._next_order += 1
         
         return match_id
     
@@ -48,9 +59,9 @@ class ScoreBoard:
         # Get all active matches
         active_matches = [match for match in self.matches.values()]
         
-        # Sort by total score (descending)
+        # Sort by total score (descending) and then by creation order (most recent first)
         return sorted(
             active_matches,
-            key=lambda x: x.home_score + x.away_score,
+            key=lambda x: (x.total_score, x.creation_order),
             reverse=True
         ) 
