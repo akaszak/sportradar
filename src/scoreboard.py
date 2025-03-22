@@ -59,6 +59,10 @@ class ScoreBoard:
         if match_id not in self.matches:
             raise KeyError(f"Match with ID {match_id} not found")
         
+        # Validate that scores are integers
+        if not isinstance(home_score, int) or not isinstance(away_score, int):
+            raise TypeError("Scores must be integers")
+        
         if home_score < 0 or away_score < 0:
             raise ValueError("Scores cannot be negative")
         

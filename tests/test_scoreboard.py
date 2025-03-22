@@ -99,6 +99,36 @@ def test_update_score_cannot_decrease():
     assert match.home_score == 2
     assert match.away_score == 1
 
+def test_update_score_non_integer():
+    scoreboard = ScoreBoard()
+    match_id = scoreboard.start_match("Mexico", "Canada")
+    
+    # Test with float values
+    with pytest.raises(TypeError, match="Scores must be integers"):
+        scoreboard.update_score(match_id, 1.5, 2)
+    
+    with pytest.raises(TypeError, match="Scores must be integers"):
+        scoreboard.update_score(match_id, 1, 2.5)
+    
+    # Test with string values
+    with pytest.raises(TypeError, match="Scores must be integers"):
+        scoreboard.update_score(match_id, "1", 2)
+    
+    with pytest.raises(TypeError, match="Scores must be integers"):
+        scoreboard.update_score(match_id, 1, "2")
+    
+    # Test with None values
+    with pytest.raises(TypeError, match="Scores must be integers"):
+        scoreboard.update_score(match_id, None, 2)
+    
+    with pytest.raises(TypeError, match="Scores must be integers"):
+        scoreboard.update_score(match_id, 1, None)
+    
+    # Verify scores remain unchanged
+    match = scoreboard.matches[match_id]
+    assert match.home_score == 0
+    assert match.away_score == 0
+
 def test_get_summary():
     scoreboard = ScoreBoard()
     
